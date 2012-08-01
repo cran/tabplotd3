@@ -1,10 +1,13 @@
+#' @importFrom RJSONIO toJSON
+#' @importFrom tabplot tableplot
 tpjson <- function(env){
   req <- Request$new(env)
   res <- Response$new()
   res$header('Content-type','application/json')
   
   params <- req$params()
-  #print(params)
+  names(params) <- gsub("?", "", names(params), fixed=TRUE)
+  print(params)
   
   
   if ("dat" %in% names(params)){
@@ -15,6 +18,7 @@ tpjson <- function(env){
     params[nums] <- lapply(params[nums], as.numeric)
     params["decreasing"] <- !params["decreasing"] %in% c("false")
     params[["plot"]] <- FALSE
+    #print(params)
     tp <- do.call(tableplot, params)
     res$write(toJSON(adjust(tp)))
   }  else {

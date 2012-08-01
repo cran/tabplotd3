@@ -12,7 +12,7 @@
 #' Interactive tableplot
 #' 
 #' \code{itabplot} is an interactive version of \code{\link{tableplot}}. It starts 
-#' your browsers and allows for zooming, panning and sorting the tableplot. This
+#' your browser and allows for zooming, panning and sorting the tableplot. This
 #' version can be used for explorative usage, while \code{tableplot} can be used for
 #' publication purposes.
 #' It needs the same parameters as tabplot.
@@ -20,20 +20,15 @@
 #' @param ... parameters that will be given to \code{tableplot}
 #' @seealso \code{\link{tableplot}}
 #' @export
+#' @importFrom httpuv runServer
+#' @import Rook
+#' @importFrom brew brew
+#' @importFrom tabplot tableplot
 itabplot <- function(x, ...){
   xlit <- deparse(substitute(x))
   tp <- tableplot(x, plot=FALSE, ...)
   args <- list(...)
   
-  #jsonf <- system.file("app/test.json", package='tabplotd3')
-  # todo write in the tmp directory and move this to a seperate json function
-  #writeLines(toJSON(adjust(tp)), con=jsonf)
-  
-  if (is.null(.e$s)){
-    .e$s <- Rhttpd$new()
-  } else { 
-    .e$s$remove(all=TRUE)
-  }
   
   app <- Builder$new( Static$new( urls = c('/css/','/img/','/js/','/.+\\.json$') #, "/.*\\.html$")
                                 , root = system.file("app", package="tabplotd3")#"."
@@ -47,13 +42,18 @@ itabplot <- function(x, ...){
                                  )
                     , URLMap$new( '^/json' = tpjson
                                   #, ".*" = Redirect$new("/tableplot.html")
-                                  , ".*" = Redirect$new("/index.html")
+                                  , ".*" = function(env){
+                                             req <- Request$new(env)
+                                             body <- paste(capture.output(brew(system.file("app/index.html", package="tabplotd3"))),collapse="\n")
+                                             res <- Response$new()
+                                             res$write(body)
+                                             res$finish()
+                                           }
                                 )
                     )
-  .e$s$launch( app=app
-          , name='tabplotd3'
-          ) 
-  #s$browse("tabplotd3")
+
+  browseURL("http://localhost:8100")
+  id <- runServer("0.0.0.0", 8100, list(call=app$call, onWSOpen=function(ws){}, onHeaders=function(x){}))
 }
 
 #### testing

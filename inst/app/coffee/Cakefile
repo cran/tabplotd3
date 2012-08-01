@@ -1,0 +1,25 @@
+{exec} = require 'child_process'
+
+option '-f', '--file [FILE]', 'filename for output, without extension'
+option '-m', '--minify [true]', 'should file be minified after building?'
+
+appFiles  = [
+  # omit src/ and .coffee to make the below lines a little shorter
+  'tableplot', 'utils'
+]
+
+task 'build', 'Build single application file from source files', (options) ->
+  filename = "#{options.file or '../js/app'}.js"
+  minify = options.minify
+  
+  exec "coffee -j #{filename} --compile #{appFiles.join ' '} ", (err, stdout, stderr) ->
+    throw err if err
+    console.log stdout + stderr
+    console.log 'Finished building.'
+
+task 'minify', 'Minify application file', (options) ->
+  filename = "#{options.file or '../js/app'}.js"
+  exec "uglifyjs --overwrite #{filename}", (err, stdout, stderr) ->
+    throw err if err
+    console.log stdout + stderr
+    console.log 'Finished minifying.'

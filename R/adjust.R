@@ -2,6 +2,7 @@
 #' @keywords internal 
 adjust <- function(tp){
   atp <- list()
+  #browser()
   varnms <- sapply(tp$columns, function(i) i$name)
   vars <- lapply( tp$columns
                   , function(i) { if (i$isnumeric)
@@ -9,8 +10,9 @@ adjust <- function(tp){
                                  , compl = i$compl/100
                                  )
                            )
-                          categories <- colnames(i$freq)
-                          freq <- round(i$freq / rowSums(i$freq), 4)
+                          categories <- i$categories
+                          freq <- round(i$freq, 4)
+                          #freq <- round(i$freq / rowSums(i$freq), 4)
                           colnames(freq) <- NULL
                           list( freq = freq, palet=i$palet, categories=categories)
                                   
@@ -19,7 +21,8 @@ adjust <- function(tp){
   names(vars) <- varnms
   atp$vars <- vars
 #   atp$dataset <- tp$dataset
-  atp$sortCol <- unlist(lapply(tp$columns, function(x) if (x$sort != "") x$name))
+  atp$sortCol <- unlist(lapply(tp$columns, function(x) if (!is.na(x$sort_decreasing)) x$name))
+  #print(tp)
   atp$nBins <- tp$nBins
   atp
 }
